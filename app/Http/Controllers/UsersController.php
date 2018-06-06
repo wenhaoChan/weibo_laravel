@@ -21,7 +21,7 @@ class UsersController extends Controller
 
     public function index()
     {
-        $users = User::paginate(10);
+        $users = User::paginate(10); // 分页 前端要用 {!! $users->render() !!}
         return view('users.index', compact('users'));
     }
 
@@ -53,6 +53,7 @@ class UsersController extends Controller
         Auth::login($user); // 注册成功后自动登录
 
         session()->flash('success', '欢迎，您将在这里开启一段新的旅程~');
+
         return redirect()->route('users.show', [$user]);
     }
 
