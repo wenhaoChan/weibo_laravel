@@ -41,6 +41,9 @@ $app->singleton(
     App\Exceptions\Handler::class
 );
 
+// 对该文件进行配置，自动加载该文件。
+require __DIR__.'/helpers.php';
+
 /*
 |--------------------------------------------------------------------------
 | Return The Application
