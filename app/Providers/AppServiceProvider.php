@@ -2,7 +2,12 @@
 
 namespace App\Providers;
 
+use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
+
+/*
+ * 框架的核心，在 Laravel 启动时，会最先加载本文件
+ * */
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        Carbon::setLocale('zh'); // 使用中文时间
     }
 
     /**
