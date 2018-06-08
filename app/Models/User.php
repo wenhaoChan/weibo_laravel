@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -37,6 +38,9 @@ class User extends Authenticatable
         });
     }
 
+    /*
+     * 根据邮箱获取头像
+     */
     public function gravatar($size = '100')
     {
         $hash = md5(strtolower(trim($this->attributes['email'])));
@@ -55,6 +59,54 @@ class User extends Authenticatable
 
     public function feed()
     {
-        return $this->statuses()->orderBy('created_at', 'desc');
+        // 取出所有关注用户
+        $user_ids = Auth::user()->followings->pluck('id')->toArray();
+        // 将当前用户的 id 加入到 user_ids 数组中
+        array_push($user_ids, Auth::user()->id);
+        return Status::whereIn('user_id', $user_ids)->with('user')->orderBy('created_at', 'desc');
+        //        return $this->statuses()->orderBy('created_at', 'desc');
+    }
+
+    /*
+     * 粉丝关系列表
+     * */
+    public function followers()
+    {
+        /*
+         * 第二个参数为自定义关联表名
+         * 第三个参数 user_id 是定义在关联中的模型外键名
+         * 第四个参数 follower_id 则是要合并的模型外键名。
+         * */
+        return $this->belongsToMany(User::Class, 'followers', 'user_id', 'follower_id');
+    }
+
+    /*
+     *用户关注人列表
+     *  */
+    public function followings()
+    {
+        // 第二个参数为自定义关联表名
+        return $this->belongsToMany(User::Class, 'followers', 'follower_id', 'user_id');
+    }
+
+    public function follow($user_ids)
+    {
+        if (!is_array($user_ids)) {
+            $user_ids = compact('user_ids');
+        }
+        $this->followings()->sync($user_ids, false);
+    }
+
+    public function unfollow($user_ids)
+    {
+        if (!is_array($user_ids)) {
+            $user_ids = compact('user_ids');
+        }
+        $this->followings()->detach($user_ids);
+    }
+
+    public function isFollowing($user_id)
+    {
+        return $this->followings->contains($user_id);
     }
 }
